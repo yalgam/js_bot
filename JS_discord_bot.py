@@ -104,16 +104,10 @@ async def check_inactive_members():
 
 
 @bot.command()
-async def 잠수(ctx):
+async def check(ctx):
     if ctx.channel.name == "💾┊bot_백업":
         await ctx.send(voice_log)
         await ctx.send(message_count)
-
-
-@bot.command()
-async def check(ctx):
-    if ctx.channel.name == "💾┊bot_백업":
-        await ctx.send("봇 정상 작동 중입니다")
 
 
 with open("./config.json") as f:
