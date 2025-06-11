@@ -12,15 +12,18 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 voice_log = {}
 message_count = {}
 
+
 @bot.event
 async def on_ready():
     print(f"{bot.user} 봇이 로그인했습니다!")
     check_inactive_members.start()
 
+
 @bot.event
 async def on_voice_state_update(member, before, after):
     if before.channel is None and after.channel is not None:
         voice_log[member.id] = datetime.datetime.utcnow()
+
 
 @bot.event
 async def on_message(message):
@@ -31,8 +34,11 @@ async def on_message(message):
     if message.author.id not in message_count:
         message_count[message.author.id] = []
     message_count[message.author.id].append(now)
-    message_count[message.author.id] = [t for t in message_count[message.author.id] if t > two_weeks_ago]
+    message_count[message.author.id] = [
+        t for t in message_count[message.author.id] if t > two_weeks_ago
+    ]
     await bot.process_commands(message)
+
 
 def format_names_block(name_list):
     if not name_list:
@@ -40,7 +46,8 @@ def format_names_block(name_list):
     names_str = ", ".join(name_list)
     return f"```\n{names_str}\n```"
 
-@tasks.loop(hours=24*14)
+
+@tasks.loop(hours=24 * 14)
 async def check_inactive_members():
     await bot.wait_until_ready()
     now = datetime.datetime.utcnow()
@@ -80,12 +87,12 @@ async def check_inactive_members():
         msg = "**2주간 음성 채팅 미참여 멤버가 없습니다.**"
     else:
         msg = f"""## 📢 **[ {start_date} ~ {end_date} ]** 음성 채팅 미참여 멤버 목록
-\u200B
+\u200b
 **❌ 미참여 멤버 ({total_inactive}명)**  
 {format_names_block(all_inactive)}
 
 **💬 채팅 횟수별 분류**
-\u200B
+\u200b
 **[ 채팅 50회 이상 ({len(chat_50_up)}명) ]**  
 {format_names_block(chat_50_up)}
 
@@ -98,9 +105,11 @@ async def check_inactive_members():
 
     await channel.send(msg)
 
+
 @bot.command()
 async def 잠수체크(ctx):
     if ctx.channel.name == "💾┊bot_백업":
         await ctx.send("봇 정상 작동 중입니다")
+
 
 bot.run("")
