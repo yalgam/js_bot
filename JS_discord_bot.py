@@ -1,19 +1,23 @@
 import discord
-from discord.ext import commands, tasks
+from discord.ext import commands
 import datetime
 import json
-
-bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.cron import CronTrigger
 
 voice_log = {}
 message_count = {}
 is_check_week = False
 
+bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
+
 
 @bot.event
 async def on_ready():
-    print(f"{bot.user} 봇이 로그인했습니다!")
-    check_inactive_members.start()
+    scheduler = AsyncIOScheduler()
+    trigger = CronTrigger(day_of_week="mon", hour=0, minute=0)
+    scheduler.add_job(check_inactive_members, trigger)
+    scheduler.start()
 
 
 @bot.event
@@ -39,28 +43,21 @@ def format_names_block(name_list):
     return f"```\n{names_str}\n```"
 
 
-@tasks.loop(time=datetime.time(hour=0, minute=0))
 async def check_inactive_members():
     global voice_log, message_count, is_check_week
-    now = datetime.datetime.now()
-    if now.weekday() != 0:
-        return
     if not is_check_week:
         is_check_week = True
         return
-
     await bot.wait_until_ready()
     for guild in bot.guilds:
         channel = discord.utils.get(guild.text_channels, name="💾┊bot_백업")
         if channel is None:
             print("관리자 채널을 찾을 수 없습니다.")
             return
-
         chat_0_10 = []
         chat_11_50 = []
         chat_50_up = []
         all_inactive = []
-
         for member in guild.members:
             if member.bot:
                 continue
@@ -76,20 +73,17 @@ async def check_inactive_members():
                         chat_11_50.append(member.display_name)
                     else:
                         chat_50_up.append(member.display_name)
-
         now = datetime.datetime.now()
-        two_weeks_ago = now - datetime.timedelta(days=14)
+        yesterday = now - datetime.timedelta(days=1)
+        two_weeks_ago = now - datetime.timedelta(days=15)
         start_date = two_weeks_ago.strftime("%m월 %d일")
-        end_date = now.strftime("%m월 %d일")
-
-        total_inactive = len(all_inactive)
-
-        if total_inactive == 0:
+        end_date = yesterday.strftime("%m월 %d일")
+        if len(all_inactive) == 0:
             msg = "**2주간 음성 채팅 미참여 멤버가 없습니다.**"
         else:
             msg = f"""## 📢 **[ {start_date} ~ {end_date} ]** 음성 채팅 미참여 멤버 목록
 \u200b
-**❌ 미참여 멤버 ({total_inactive}명)**  
+**❌ 미참여 멤버 ({len(all_inactive)}명)**  
 {format_names_block(all_inactive)}
 
 **💬 채팅 횟수별 분류**
