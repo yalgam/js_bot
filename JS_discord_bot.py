@@ -41,14 +41,14 @@ def format_names_block(name_list):
 
 @tasks.loop(time=datetime.time(hour=0, minute=0))
 async def check_inactive_members():
-    global voice_log,message_count,is_check_week
+    global voice_log, message_count, is_check_week
     now = datetime.datetime.now()
     if now.weekday() != 0:
         return
-    if not is_check_week :
+    if not is_check_week:
         is_check_week = True
         return
-    
+
     await bot.wait_until_ready()
     for guild in bot.guilds:
         channel = discord.utils.get(guild.text_channels, name="💾┊bot_백업")
@@ -102,18 +102,18 @@ async def check_inactive_members():
 
 **[ 채팅 0회 - 10회 ({len(chat_0_10)}명) ]**  
 {format_names_block(chat_0_10)}
-""" 
+"""
         await channel.send(msg)
         voice_log.clear()
         message_count.clear()
         is_check_week = False
-    
+
 
 @bot.command()
 async def 잠수(ctx):
     if ctx.channel.name == "💾┊bot_백업":
         await ctx.send("봇 정상 작동 중입니다")
-    
+
 
 with open("./config.json") as f:
     config = json.load(f)
