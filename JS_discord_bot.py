@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands, tasks
 import datetime
+import json
 
 intents = discord.Intents.default()
 intents.voice_states = True
@@ -107,10 +108,12 @@ async def check_inactive_members():
 
 
 @bot.command()
-async def 잠수체크(ctx):
+async def 잠수(ctx):
     if ctx.channel.name == "💾┊bot_백업":
         await ctx.send("봇 정상 작동 중입니다")
 
 
-bot.run("")
+with open('./config.json') as f :
+    config = json.load(f)
 
+bot.run(config['token'])
