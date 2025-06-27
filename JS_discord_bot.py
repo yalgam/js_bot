@@ -44,24 +44,35 @@ def format_names_block(name_list):
 
 
 async def check_inactive_members():
-    global voice_log, message_count, is_check_week
+    global is_check_week
     if not is_check_week:
         is_check_week = True
         return
     else:
-        await check_inactive_members2()
-        voice_log.clear()
-        message_count.clear()
+        await bot.wait_until_ready()
+        await check()
+        await clear()
         is_check_week = False
 
 
-async def check_inactive_members2():
+@bot.command()
+async def clear(ctx):
+    if ctx is not None and ctx.channel.name != "💾┊bot_백업":
+        return
+    voice_log.clear()
+    message_count.clear()
+    if ctx is not None and ctx.channel.name == "💾┊bot_백업":
+        await ctx.channel.send("목록 초기화 완료")
+
+
+@bot.command()
+async def check(ctx=None):
+    if ctx is not None and ctx.channel.name != "💾┊bot_백업":
+        return
     global voice_log, message_count
-    await bot.wait_until_ready()
     for guild in bot.guilds:
         channel = discord.utils.get(guild.text_channels, name="💾┊bot_백업")
         if channel is None:
-            print("관리자 채널을 찾을 수 없습니다.")
             continue
         chat_0_10 = []
         chat_11_50 = []
@@ -107,12 +118,6 @@ async def check_inactive_members2():
 {format_names_block(chat_0_10)}
 """
         await channel.send(msg)
-
-
-@bot.command()
-async def check(ctx):
-    if ctx.channel.name == "💾┊bot_백업":
-        await check_inactive_members2()
 
 
 with open("./config.json") as f:
